@@ -1,0 +1,1428 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0d1017">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💳</text></svg>">
+<title>Pocket Ledger</title>
+<style>
+  :root {
+    --bg: #0d1017;
+    --card: #151a24;
+    --card2: #10141d;
+    --border: rgba(255,255,255,0.07);
+    --text: #e6e9f2;
+    --muted: #8b93a7;
+    --accent: #34d399;
+    --accent-soft: rgba(52,211,153,0.14);
+    --warm: #fb7185;
+    --warn: #fbbf24;
+  }
+  * { box-sizing: border-box; }
+  html { color-scheme: dark; }
+
+  body {
+    margin: 0;
+    background: radial-gradient(1100px 700px at 50% -10%, #161c29, var(--bg));
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+  button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; }
+  input { font: inherit; color: var(--text); }
+  ::placeholder { color: #59627a; }
+
+  #app { width: min(940px, 96vw); margin: 0 auto; padding: 20px 0 60px; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+  }
+
+  /* ---------- top bar ---------- */
+  .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .wordmark { display: flex; align-items: center; gap: 9px; font-size: 16px; font-weight: 700; letter-spacing: .01em; }
+  .wordmark .logo {
+    width: 32px; height: 32px; display: grid; place-items: center;
+    border-radius: 10px; background: var(--accent-soft); font-size: 17px;
+  }
+  .iconbtn {
+    width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center;
+    background: var(--card); border: 1px solid var(--border); color: var(--muted);
+    transition: color .2s, border-color .2s;
+  }
+  .iconbtn:hover { color: var(--text); border-color: rgba(255,255,255,.16); }
+
+  /* ---------- quick add ---------- */
+  #quick {
+    position: sticky; top: 10px; z-index: 30;
+    padding: 12px;
+    box-shadow: 0 14px 40px rgba(0,0,0,.45);
+    backdrop-filter: blur(8px);
+    background: rgba(21,26,36,.92);
+  }
+  #editBanner {
+    display: none;
+    margin: -2px 0 8px;
+    padding: 6px 10px;
+    border-radius: 9px;
+    background: rgba(251,191,36,.12);
+    color: var(--warn);
+    font-size: 12.5px;
+  }
+  #editBanner.show { display: flex; justify-content: space-between; align-items: center; }
+  #editBanner button { color: var(--warn); text-decoration: underline; font-size: 12.5px; }
+  .qrow { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  #amount {
+    width: 110px; padding: 9px 12px;
+    background: var(--card2); border: 1px solid var(--border); border-radius: 10px;
+    font-size: 17px; font-weight: 700;
+  }
+  #amount:focus, #note:focus, #date:focus { outline: none; border-color: var(--accent); }
+  #chips {
+    display: flex; gap: 6px; overflow-x: auto; padding: 2px;
+    scrollbar-width: none;
+  }
+  #chips::-webkit-scrollbar { display: none; }
+  #chips button {
+    flex: 0 0 auto; padding: 7px 11px; border-radius: 999px;
+    border: 1px solid var(--border); background: var(--card2);
+    color: var(--muted); font-size: 13px; font-weight: 600; white-space: nowrap;
+    transition: all .15s;
+  }
+  #chips button.on { border-color: var(--accent); background: var(--accent-soft); color: var(--text); }
+  #note {
+    flex: 1 1 180px; min-width: 150px; padding: 9px 12px;
+    background: var(--card2); border: 1px solid var(--border); border-radius: 10px;
+  }
+  #date {
+    padding: 8px 10px; background: var(--card2);
+    border: 1px solid var(--border); border-radius: 10px; color-scheme: dark;
+  }
+  #addBtn {
+    padding: 10px 22px; border-radius: 10px;
+    background: var(--accent); color: #06281d; font-weight: 800; letter-spacing: .02em;
+    transition: filter .15s;
+  }
+  #addBtn:hover { filter: brightness(1.1); }
+
+  /* ---------- month nav ---------- */
+  .monthbar { display: flex; align-items: center; gap: 10px; margin: 20px 0 12px; }
+  .monthbar .nav {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--card); border: 1px solid var(--border); color: var(--muted);
+    font-size: 17px; line-height: 1;
+  }
+  .monthbar .nav:disabled { opacity: .35; cursor: default; }
+  #monthLabel { flex: 1; text-align: center; font-size: 19px; font-weight: 700; }
+  .backtoday {
+    display: inline-block; margin-left: 10px; padding: 4px 10px; border-radius: 999px;
+    border: 1px solid var(--border); background: var(--card2);
+    font-size: 12px; color: var(--muted); vertical-align: 2px;
+  }
+  .backtoday:hover { color: var(--text); }
+
+  /* ---------- budget ---------- */
+  #budgetCard { padding: 14px 16px; margin-bottom: 12px; }
+  .bline { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .bline .bl { font-size: 13.5px; color: var(--muted); }
+  .bline .bl b { color: var(--text); font-size: 15px; }
+  .bpct { font-weight: 700; font-size: 14px; }
+  .bar { height: 9px; margin-top: 10px; border-radius: 99px; background: rgba(255,255,255,.07); overflow: hidden; }
+  .bar i { display: block; height: 100%; border-radius: 99px; background: var(--accent); transition: width .4s ease; }
+  .bar i.warn { background: var(--warn); }
+  .bar i.danger { background: var(--warm); }
+
+  /* ---------- stats ---------- */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 12px; }
+  .stat { padding: 13px 14px; }
+  .stat .slabel { font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .stat .snum { margin-top: 3px; font-size: 21px; font-weight: 750; font-variant-numeric: tabular-nums; }
+  .stat .ssub { margin-top: 2px; font-size: 12px; color: var(--muted); }
+  .stat .ssub.down { color: var(--accent); }
+  .stat .ssub.up { color: var(--warm); }
+  .stat .snum.ok { color: var(--accent); }
+  .stat .snum.bad { color: var(--warm); }
+  @media (max-width: 700px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+
+  /* ---------- charts ---------- */
+  .charts { display: grid; grid-template-columns: 1.35fr 1fr; gap: 12px; margin-bottom: 12px; }
+  @media (max-width: 700px) { .charts { grid-template-columns: 1fr; } }
+  .chartcard { padding: 15px 16px 13px; }
+  .chartcard h3 { margin: 0 0 10px; font-size: 13px; font-weight: 700; color: var(--muted); letter-spacing: .05em; text-transform: uppercase; }
+  .chwrap { position: relative; }
+  #dailyCanvas { display: block; width: 100%; height: 200px; }
+  .tip {
+    position: absolute; pointer-events: none; display: none;
+    padding: 5px 9px; border-radius: 8px; white-space: nowrap;
+    background: #0b0e14; border: 1px solid var(--border);
+    font-size: 12px; font-variant-numeric: tabular-nums;
+    transform: translate(-50%, -130%); z-index: 5;
+  }
+  .donutwrap { position: relative; width: 170px; margin: 4px auto 12px; }
+  #donutCanvas { display: block; width: 170px; height: 170px; }
+  .donutcenter { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }
+  .donutcenter .dc-amount { font-size: 19px; font-weight: 750; font-variant-numeric: tabular-nums; }
+  .donutcenter .dc-label { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .legend { display: grid; gap: 7px; }
+  .lrow { display: flex; align-items: center; gap: 9px; font-size: 13px; }
+  .ldot { width: 24px; height: 24px; border-radius: 7px; display: grid; place-items: center; font-size: 13px; flex: 0 0 auto; }
+  .lname { color: var(--muted); }
+  .lval { margin-left: auto; font-variant-numeric: tabular-nums; }
+  .lempty { color: var(--muted); font-size: 12.5px; text-align: center; padding: 8px 0 4px; }
+
+  /* ---------- list ---------- */
+  #listCard { margin-bottom: 12px; }
+  .lhead { display: flex; align-items: center; gap: 10px; padding: 13px 16px; }
+  .lhead h3 { margin: 0; font-size: 13px; font-weight: 700; color: var(--muted); letter-spacing: .05em; text-transform: uppercase; }
+  #search {
+    margin-left: auto; width: 190px; padding: 7px 11px;
+    background: var(--card2); border: 1px solid var(--border); border-radius: 9px; font-size: 13px;
+  }
+  #search:focus { outline: none; border-color: var(--accent); }
+  .lbody { padding: 0 8px 10px; }
+  .group .gdate {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 10px 10px 5px; font-size: 12px; font-weight: 700;
+    letter-spacing: .06em; text-transform: uppercase; color: var(--muted);
+  }
+  .group .gdate .gsub { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--muted); }
+  .row {
+    display: flex; align-items: center; gap: 11px;
+    padding: 8px 10px; border-radius: 10px; cursor: pointer;
+  }
+  .row:hover { background: rgba(255,255,255,.045); }
+  .row.new { animation: flash 1.4s ease; }
+  @keyframes flash { 0% { background: var(--accent-soft); } 100% { background: transparent; } }
+  .remoji {
+    width: 34px; height: 34px; border-radius: 10px; flex: 0 0 auto;
+    display: grid; place-items: center; font-size: 16px;
+  }
+  .rmeta { flex: 1; min-width: 0; }
+  .rnote { font-weight: 600; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rcat { font-size: 11.5px; color: var(--muted); }
+  .ramount { margin-left: auto; font-weight: 700; font-variant-numeric: tabular-nums; font-size: 13.5px; }
+  .rdel {
+    flex: 0 0 auto; width: 26px; height: 26px; border-radius: 8px;
+    color: #59627a; font-size: 15px; line-height: 1;
+    opacity: 0; transition: opacity .15s;
+  }
+  .row:hover .rdel { opacity: 1; }
+  .rdel:hover { color: var(--warm); background: rgba(251,113,133,.12); }
+  .lemptymsg { padding: 22px 10px 18px; text-align: center; color: var(--muted); font-size: 13px; }
+
+  /* ---------- empty state ---------- */
+  #emptyHero { display: none; padding: 46px 20px; text-align: center; margin-bottom: 12px; }
+  #emptyHero.show { display: block; }
+  #emptyHero .big { font-size: 44px; }
+  #emptyHero h2 { margin: 10px 0 4px; font-size: 19px; }
+  #emptyHero p { margin: 0 0 18px; color: var(--muted); }
+  .ghostbtn {
+    padding: 10px 18px; border-radius: 11px; border: 1px solid var(--border);
+    background: var(--card2); font-weight: 650; margin-left: 8px;
+  }
+  .ghostbtn:hover { border-color: rgba(255,255,255,.18); }
+  .primebtn { padding: 10px 18px; border-radius: 11px; background: var(--accent); color: #06281d; font-weight: 800; }
+  .primebtn:hover { filter: brightness(1.1); }
+
+  .foot { text-align: center; color: #59627a; font-size: 11.5px; margin-top: 26px; }
+
+  /* ---------- settings ---------- */
+  dialog {
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--card); color: var(--text);
+    width: min(460px, 92vw); padding: 20px;
+    max-height: 88vh; overflow: auto;
+  }
+  dialog::backdrop { background: rgba(6,8,12,.65); backdrop-filter: blur(3px); }
+  .shead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .shead h2 { margin: 0; font-size: 16px; }
+  .sclose { width: 30px; height: 30px; border-radius: 9px; color: var(--muted); font-size: 17px; }
+  .sclose:hover { background: rgba(255,255,255,.07); }
+  .slabel { display: block; font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 14px 0 6px; }
+  dialog input[type="number"], dialog input[type="text"] {
+    width: 100%; padding: 9px 12px; background: var(--card2);
+    border: 1px solid var(--border); border-radius: 10px;
+  }
+  dialog input:focus { outline: none; border-color: var(--accent); }
+  .row2 { display: flex; gap: 10px; }
+  .row2 > div { flex: 1; }
+  #catList { display: grid; gap: 7px; margin-top: 4px; max-height: 250px; overflow: auto; }
+  .crow { display: flex; gap: 7px; align-items: center; }
+  .crow .cem { width: 44px; padding: 7px 6px; text-align: center; background: var(--card2); border: 1px solid var(--border); border-radius: 9px; }
+  .crow input { padding: 7px 10px; background: var(--card2); border: 1px solid var(--border); border-radius: 9px; }
+  .crow .cname { flex: 1; min-width: 0; }
+  .crow .cdel { width: 30px; height: 30px; border-radius: 8px; color: #59627a; font-size: 15px; }
+  .crow .cdel:hover { color: var(--warm); background: rgba(251,113,133,.12); }
+  .datareps { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }
+  .danger { color: var(--warm); border-color: rgba(251,113,133,.35) !important; }
+  .danger:hover { border-color: var(--warm) !important; }
+  .datareps .ghostbtn { margin-left: 0; }
+  #toast {
+    position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%) translateY(80px);
+    display: flex; align-items: center; gap: 14px;
+    padding: 11px 18px; border-radius: 12px;
+    background: #0b0e14; border: 1px solid var(--border);
+    box-shadow: 0 14px 40px rgba(0,0,0,.5);
+    font-size: 13.5px; opacity: 0; transition: all .25s ease; z-index: 90;
+    max-width: 90vw; white-space: nowrap;
+  }
+  #toast.show { transform: translateX(-50%); opacity: 1; }
+  #toast button { color: var(--accent); font-weight: 700; font-size: 13.5px; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div class="topbar">
+    <div class="wordmark"><span class="logo">💳</span> Pocket Ledger</div>
+    <button class="iconbtn" id="btnSettings" aria-label="Settings" title="Settings">⚙</button>
+  </div>
+
+  <!-- quick add -->
+  <form id="quick" class="card" autocomplete="off">
+    <div id="editBanner"><span id="editBannerText">Editing…</span><button type="button" id="cancelEdit">cancel (Esc)</button></div>
+    <div class="qrow">
+      <input id="amount" type="text" inputmode="decimal" placeholder="$ 0.00">
+      <div id="chips"></div>
+      <input id="note" type="text" placeholder="Note (optional)" maxlength="60" list="notesList">
+      <input id="date" type="date" aria-label="Date">
+      <button id="addBtn" type="submit">Add</button>
+    </div>
+    <datalist id="notesList"></datalist>
+  </form>
+
+  <div id="emptyHero" class="card">
+    <div class="big">🪙</div>
+    <h2>Nothing tracked yet</h2>
+    <p>Add your first expense above, or look around with sample data.</p>
+    <button class="primebtn" id="btnHero1" type="button">Enter an expense</button>
+    <button class="ghostbtn" id="btnHero2" type="button">Load sample data</button>
+  </div>
+
+  <!-- month nav -->
+  <div class="monthbar">
+    <button class="nav" id="prevM" aria-label="Previous month">‹</button>
+    <div id="monthLabel"></div>
+    <button class="nav" id="nextM" aria-label="Next month">›</button>
+  </div>
+
+  <div id="budgetCard" class="card"></div>
+  <div class="stats" id="statsRow"></div>
+
+  <div class="charts">
+    <div class="chartcard">
+      <h3>Daily spending</h3>
+      <div class="chwrap">
+        <canvas id="dailyCanvas" height="200"></canvas>
+        <div class="tip" id="dailyTip"></div>
+      </div>
+    </div>
+    <div class="chartcard">
+      <h3>Where it goes</h3>
+      <div class="donutwrap">
+        <canvas id="donutCanvas" width="170" height="170"></canvas>
+        <div class="donutcenter">
+          <div class="dc-amount" id="dcAmount"></div>
+          <div class="dc-label">this month</div>
+        </div>
+      </div>
+      <div class="legend" id="legend"></div>
+    </div>
+  </div>
+
+  <div id="listCard" class="card">
+    <div class="lhead">
+      <h3>Transactions</h3>
+      <input id="search" type="text" placeholder="Search…">
+    </div>
+    <div class="lbody" id="listGroups"></div>
+  </div>
+
+  <div class="foot">Pocket Ledger · all data stays in this browser · export a backup from settings</div>
+</div>
+
+<dialog id="settings">
+  <div class="shead"><h2>Settings</h2><button class="sclose" id="closeSettings" aria-label="Close">✕</button></div>
+
+  <label class="slabel" for="budgetInput">Monthly budget</label>
+  <input id="budgetInput" type="number" min="0" step="1" placeholder="e.g. 900">
+
+  <label class="slabel" for="symbolInput">Currency symbol</label>
+  <input id="symbolInput" type="text" maxlength="3">
+
+  <label class="slabel">Categories</label>
+  <div id="catList"></div>
+  <div style="display:flex; gap:7px; margin-top:9px;">
+    <input id="newCatEmoji" type="text" maxlength="2" placeholder="🙂" style="width:56px; text-align:center;">
+    <input id="newCatName" type="text" maxlength="18" placeholder="New category name">
+    <button class="ghostbtn" id="addCatBtn" type="button" style="margin-left:0;">Add</button>
+  </div>
+
+  <label class="slabel">Your data</label>
+  <div class="datareps">
+    <button class="ghostbtn" id="btnExportJson" type="button">Backup (JSON)</button>
+    <button class="ghostbtn" id="btnImportJson" type="button">Restore (JSON)</button>
+    <button class="ghostbtn" id="btnExportCsv" type="button">Export CSV</button>
+    <button class="ghostbtn" id="btnSample" type="button">Load sample data</button>
+    <button class="ghostbtn danger" id="btnClear" type="button" style="grid-column: 1 / -1;">Clear all transactions</button>
+  </div>
+  <input id="importFile" type="file" accept=".json,application/json" hidden>
+</dialog>
+
+<div id="toast"></div>
+
+<script>
+(() => {
+"use strict";
+
+/* ============================== store ============================== */
+
+const KEY = "ledger-v1";
+const DEFAULT_CATS = [
+  { id: "food",      emoji: "🍔", name: "Food",      color: "#f97362" },
+  { id: "groceries", emoji: "🛒", name: "Groceries", color: "#34d399" },
+  { id: "transport", emoji: "🚌", name: "Transport", color: "#38bdf8" },
+  { id: "home",      emoji: "🏠", name: "Home",      color: "#fbbf24" },
+  { id: "fun",       emoji: "🎉", name: "Fun",       color: "#e879f9" },
+  { id: "health",    emoji: "💊", name: "Health",    color: "#2dd4bf" },
+  { id: "bills",     emoji: "💡", name: "Bills",     color: "#fb7185" },
+  { id: "shopping",  emoji: "🛍️", name: "Shopping",  color: "#a78bfa" },
+  { id: "other",     emoji: "✨", name: "Other",     color: "#94a3b8" },
+];
+
+function blankDb() {
+  return { txns: [], cats: JSON.parse(JSON.stringify(DEFAULT_CATS)), budget: null, symbol: "$" };
+}
+
+function migrate(raw) {
+  const db = blankDb();
+  if (!raw || typeof raw !== "object") return db;
+  if (Array.isArray(raw.cats) && raw.cats.length) {
+    db.cats = raw.cats
+      .filter((c) => c && c.id)
+      .map((c) => ({
+        id: String(c.id),
+        emoji: String(c.emoji || "✨").slice(0, 3),
+        name: String(c.name || "Category").slice(0, 24),
+        color: /^#[0-9a-fA-F]{6}$/.test(c.color) ? c.color : "#94a3b8",
+      }));
+  }
+  if (Array.isArray(raw.txns)) {
+    db.txns = raw.txns
+      .filter((t) => t && /^\d{4}-\d{2}-\d{2}$/.test(String(t.date)) && Number(t.amount) > 0)
+      .map((t) => ({
+        id: String(t.id || newId()),
+        date: String(t.date).slice(0, 10),
+        amount: Math.round(Number(t.amount) * 100) / 100,
+        cat: String(t.cat || "other"),
+        note: String(t.note || "").slice(0, 80),
+        createdAt: Number(t.createdAt) || Date.parse(t.date) || Date.now(),
+      }));
+  }
+  db.budget = Number(raw.budget) > 0 ? Number(raw.budget) : null;
+  db.symbol = sanitizeSymbol(typeof raw.symbol === "string" ? raw.symbol : "$");
+  return db;
+}
+
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(db)); } catch { /* private mode etc. */ }
+}
+
+const newId = () =>
+  (crypto && crypto.randomUUID) ? crypto.randomUUID() :
+  "t" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+
+let db;
+try { db = migrate(JSON.parse(localStorage.getItem(KEY) || "null")); }
+catch { db = blankDb(); }
+
+const catById = (id) => db.cats.find((c) => c.id === id);
+const fallbackCat = () => ({ id: "other", emoji: "✨", name: "Other", color: "#94a3b8" });
+
+/* ============================== date helpers ============================== */
+
+const pad = (n) => String(n).padStart(2, "0");
+const todayISO = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+};
+const monthOf = (iso) => iso.slice(0, 7);
+const nowMonth = () => monthOf(todayISO());
+
+function monthParts(mkey) {
+  const y = Number(mkey.slice(0, 4));
+  const m = Number(mkey.slice(5, 7)); // 1-based
+  return { y, m };
+}
+function daysInMonth(mkey) {
+  const { y, m } = monthParts(mkey);
+  return new Date(y, m, 0).getDate();
+}
+function shiftMonth(mkey, delta) {
+  const { y, m } = monthParts(mkey);
+  const d = new Date(y, m - 1 + delta, 1);
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
+}
+function monthLabel(mkey) {
+  const { y, m } = monthParts(mkey);
+  return new Intl.DateTimeFormat(undefined, { month: "long", year: "numeric" }).format(new Date(y, m - 1, 1));
+}
+function isoToDate(iso) {
+  return new Date(Number(iso.slice(0, 4)), Number(iso.slice(5, 7)) - 1, Number(iso.slice(8, 10)));
+}
+function todayMinus1ISO() {
+  const d = new Date(); d.setDate(d.getDate() - 1);
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+function dayLongLabel(iso) {
+  const wd = new Intl.DateTimeFormat(undefined, { weekday: "long" }).format(isoToDate(iso));
+  const md = new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" }).format(isoToDate(iso));
+  return `${wd} · ${md}`;
+}
+
+/* ============================== money helpers ============================== */
+
+function money(n, opts = {}) {
+  const sign = n < 0 ? "-" : "";
+  const abs = Math.abs(n);
+  const s = abs.toLocaleString(undefined, {
+    minimumFractionDigits: opts.cents === false ? 0 : 2,
+    maximumFractionDigits: opts.cents === false ? 0 : 2,
+  });
+  return sign + (db.symbol || "") + s;
+}
+
+// symbols get embedded in innerHTML-rich spots like the budget line, so strip
+// anything that could be interpreted as markup
+function sanitizeSymbol(v) {
+  const s = String(v || "").replace(/[<>&"']/g, "").slice(0, 3);
+  return s || "$";
+}
+
+/* ============================== state ============================== */
+
+let viewMonth = nowMonth();
+let selectedCat = (db.cats[0] || fallbackCat()).id;
+let editingId = null;
+let lastFlashId = null;
+
+/* ============================== element handles ============================== */
+
+const $ = (id) => document.getElementById(id);
+const els = {
+  monthLabel: $("monthLabel"), prevM: $("prevM"), nextM: $("nextM"),
+  budgetCard: $("budgetCard"), statsRow: $("statsRow"),
+  legend: $("legend"), dcAmount: $("dcAmount"),
+  dailyCanvas: $("dailyCanvas"), dailyTip: $("dailyTip"),
+  donutCanvas: $("donutCanvas"),
+  listGroups: $("listGroups"), search: $("search"),
+  quick: $("quick"), amount: $("amount"), note: $("note"), date: $("date"),
+  chips: $("chips"), addBtn: $("addBtn"),
+  editBanner: $("editBanner"), editBannerText: $("editBannerText"), cancelEdit: $("cancelEdit"),
+  notesList: $("notesList"),
+  emptyHero: $("emptyHero"),
+  toast: $("toast"),
+  settings: $("settings"),
+  budgetInput: $("budgetInput"), symbolInput: $("symbolInput"),
+  catList: $("catList"), newCatEmoji: $("newCatEmoji"), newCatName: $("newCatName"),
+  importFile: $("importFile"),
+};
+
+/* ============================== data queries ============================== */
+
+const txnsInMonth = (mkey) => db.txns.filter((t) => monthOf(t.date) === mkey);
+const sum = (list) => list.reduce((a, t) => a + t.amount, 0);
+
+function monthStats(mkey) {
+  const txns = txnsInMonth(mkey);
+  const spent = sum(txns);
+  const dim = daysInMonth(mkey);
+  const isCurrent = mkey === nowMonth();
+  const pastDays = isCurrent ? Number(todayISO().slice(8, 10)) : dim;
+  const avg = pastDays > 0 ? spent / pastDays : 0;
+  const proj = isCurrent ? avg * dim : null;
+  const lastSpent = sum(txnsInMonth(shiftMonth(mkey, -1)));
+  const vsLast = lastSpent > 0 ? (spent - lastSpent) / lastSpent : null;
+  return { txns, spent, dim, isCurrent, avg, proj, lastSpent, vsLast, pastDays };
+}
+
+function breakdown(mkey) {
+  const byCat = new Map();
+  for (const t of txnsInMonth(mkey)) {
+    byCat.set(t.cat, (byCat.get(t.cat) || 0) + t.amount);
+  }
+  const entries = [...byCat.entries()]
+    .map(([id, amount]) => ({ id, amount, cat: catById(id) || fallbackCat() }))
+    .sort((a, b) => b.amount - a.amount);
+  return entries;
+}
+
+function dailySeries(mkey) {
+  const dim = daysInMonth(mkey);
+  const arr = new Array(dim).fill(0);
+  for (const t of txnsInMonth(mkey)) {
+    const d = Number(t.date.slice(8, 10));
+    if (d >= 1 && d <= dim) arr[d - 1] += t.amount;
+  }
+  return arr;
+}
+
+/* ============================== rendering ============================== */
+
+function renderMonthbar() {
+  els.monthLabel.innerHTML = "";
+  const label = document.createElement("span");
+  label.textContent = monthLabel(viewMonth);
+  els.monthLabel.appendChild(label);
+  if (viewMonth !== nowMonth()) {
+    const back = document.createElement("button");
+    back.className = "backtoday";
+    back.type = "button";
+    back.textContent = "back to " + monthLabel(nowMonth());
+    back.addEventListener("click", () => { viewMonth = nowMonth(); renderAll(); });
+    els.monthLabel.appendChild(back);
+  }
+  els.prevM.disabled = viewMonth <= "2000-01";
+  els.nextM.disabled = viewMonth >= nowMonth();
+}
+
+function renderBudget() {
+  const s = monthStats(viewMonth);
+  els.budgetCard.innerHTML = "";
+  if (db.budget) {
+    const pct = Math.max(0, Math.min(1, s.spent / db.budget));
+    const over = s.spent > db.budget;
+    const near = !over && pct >= 0.85;
+    const wrap = document.createElement("div");
+    wrap.innerHTML = `
+      <div class="bline">
+        <span class="bl">Spent ${money(s.spent)} of ${money(db.budget, { cents: false })}</span>
+        <span class="bpct" style="color:${over ? "var(--warm)" : near ? "var(--warn)" : "var(--text)"}">
+          ${Math.round((s.spent / db.budget) * 100)}%
+        </span>
+      </div>
+      <div class="bar"><i class="${over ? "danger" : near ? "warn" : ""}" style="width:${(pct * 100).toFixed(1)}%"></i></div>
+      ${over ? `<div class="bl" style="margin-top:9px; color:var(--warm);">Over budget by ${money(s.spent - db.budget)}</div>` : ""}
+    `;
+    els.budgetCard.appendChild(wrap);
+  } else {
+    const wrap = document.createElement("div");
+    wrap.style.cssText = "display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;";
+    const msg = document.createElement("span");
+    msg.style.color = "var(--muted)";
+    msg.textContent = "No budget set — add one to see how the month is going.";
+    const btn = document.createElement("button");
+    btn.className = "ghostbtn";
+    btn.type = "button";
+    btn.style.marginLeft = "0";
+    btn.textContent = "Set a monthly budget";
+    btn.addEventListener("click", () => { openSettings("focusBudget"); });
+    wrap.append(msg, btn);
+    els.budgetCard.appendChild(wrap);
+  }
+}
+
+function renderStats() {
+  const s = monthStats(viewMonth);
+  const rem = db.budget ? db.budget - s.spent : null;
+  const vs = s.vsLast === null ? null : Math.round(s.vsLast * 100);
+  const cls = (n) => (n >= 0 ? "ok" : "bad");
+
+  const cards = [
+    {
+      label: s.isCurrent ? "This month" : "That month",
+      num: money(s.spent, { cents: false }),
+      numCls: "",
+      sub:
+        vs === null
+          ? s.lastSpent === 0 ? "no data last month" : ""
+          : `<span class="${vs <= 0 ? "down" : "up"}" style="font-variant-numeric:tabular-nums">${vs > 0 ? "+" : ""}${vs}% vs ${new Intl.DateTimeFormat(undefined, { month: "short" }).format(isoToDate(shiftMonth(viewMonth, -1) + "-01"))}</span>`,
+    },
+    {
+      label: db.budget ? "Remaining" : "No budget",
+      num: rem === null ? "—" : money(rem),
+      numCls: rem === null ? "" : cls(rem),
+      sub: rem === null ? "set one in settings" : `of ${money(db.budget, { cents: false })}`,
+    },
+    {
+      label: "Daily average",
+      num: money(s.avg),
+      sub: `over ${s.pastDays} day${s.pastDays === 1 ? "" : "s"}`,
+    },
+    {
+      label: "Projection",
+      num: s.proj === null ? "—" : money(s.proj, { cents: false }),
+      sub: s.proj === null ? "current month only" : "if the pace holds",
+    },
+  ];
+
+  els.statsRow.innerHTML = "";
+  for (const c of cards) {
+    const d = document.createElement("div");
+    d.className = "stat card";
+    d.innerHTML = `<div class="slabel"></div><div class="snum ${c.numCls}"></div><div class="ssub"></div>`;
+    d.children[0].textContent = c.label;
+    d.children[1].textContent = c.num;
+    d.children[2].innerHTML = c.sub || "";
+    els.statsRow.appendChild(d);
+  }
+}
+
+/* ---------- daily bar chart (canvas, no libraries) ---------- */
+
+const daily = {
+  data: [],
+  hover: -1,
+  niceMax(v) {
+    if (v <= 0) return 10;
+    const p = Math.pow(10, Math.floor(Math.log10(v)));
+    const c = v / p;
+    const step = c <= 1 ? 1 : c <= 2 ? 2 : c <= 2.5 ? 2.5 : c <= 5 ? 5 : 10;
+    return step * p;
+  },
+  draw() {
+    const c = els.dailyCanvas;
+    const dpr = window.devicePixelRatio || 1;
+    const W = c.clientWidth || 400;
+    const H = 200;
+    c.width = Math.round(W * dpr);
+    c.height = Math.round(H * dpr);
+    const x = c.getContext("2d");
+    x.setTransform(dpr, 0, 0, dpr, 0, 0);
+    x.clearRect(0, 0, W, H);
+
+    const dim = daysInMonth(viewMonth);
+    const data = dailySeries(viewMonth);
+    daily.data = data;
+    const max = Math.max(...data);
+    const nm = daily.niceMax(max * 1.05);
+    const padL = 34, padR = 6, padT = 18, padB = 20;
+    const gw = W - padL - padR;
+    const gh = H - padT - padB;
+    const slot = gw / dim;
+    const yFor = (v) => padT + (1 - v / nm) * gh;
+
+    // grid lines
+    x.strokeStyle = "rgba(255,255,255,0.06)";
+    x.fillStyle = "#59627a";
+    x.font = "10px system-ui";
+    x.textAlign = "right";
+    for (const frac of [1, 0.5]) {
+      const y = yFor(nm * frac);
+      x.beginPath();
+      x.moveTo(padL, y + 0.5);
+      x.lineTo(W - padR, y + 0.5);
+      x.stroke();
+      x.fillText(daily.short(nm * frac), padL - 5, y + 3);
+    }
+
+    // bars
+    const today = viewMonth === nowMonth() ? Number(todayISO().slice(8, 10)) : null;
+    for (let d = 1; d <= dim; d++) {
+      const v = data[d - 1];
+      const bw = Math.max(2, slot * 0.66);
+      const bx = padL + slot * (d - 1) + (slot - bw) / 2;
+      const by = v === 0 ? H - padB - 1 : yFor(v);
+      const bh = v === 0 ? 1 : H - padB - by;
+      if (v === 0) {
+        x.fillStyle = "rgba(255,255,255,0.07)";
+      } else if (d === daily.hover) {
+        x.fillStyle = "#6ee7b7";
+      } else if (d === today) {
+        x.fillStyle = "#4ade80";
+      } else {
+        x.fillStyle = "rgba(52,211,153,0.55)";
+      }
+      x.beginPath();
+      const r = Math.min(3, bw / 2, bh);
+      x.roundRect ? x.roundRect(bx, by, bw, bh, r) : x.rect(bx, by, bw, bh);
+      x.fill();
+    }
+
+    // x labels: every 5th + last
+    x.fillStyle = "#59627a";
+    x.textAlign = "center";
+    for (let d = 1; d <= dim; d++) {
+      if (d % 5 === 1 || d === dim) {
+        x.fillText(String(d), padL + slot * (d - 1) + slot / 2, H - 6);
+      }
+    }
+
+    if (max === 0) {
+      x.fillStyle = "#59627a";
+      x.font = "12.5px system-ui";
+      x.textAlign = "center";
+      x.fillText("No spending recorded this month", W / 2, H / 2);
+    }
+  },
+  short(v) {
+    if (v >= 1000) return (v / 1000).toFixed(v % 1000 === 0 ? 0 : 1) + "k";
+    return String(Math.round(v));
+  },
+  setData() { daily.draw(); },
+};
+
+function bindDailyHover() {
+  const c = els.dailyCanvas;
+  const move = (ev) => {
+    const rect = c.getBoundingClientRect();
+    const padL = 34, padR = 6;
+    const W = rect.width;
+    const dim = daysInMonth(viewMonth);
+    const slot = (W - padL - padR) / dim;
+    let idx = Math.floor((ev.clientX - rect.left - padL) / slot);
+    idx = Math.max(0, Math.min(dim - 1, idx));
+    daily.hover = idx;
+    daily.draw();
+    const d = idx + 1;
+    const mm = Number(viewMonth.slice(5, 7));
+    const dt = new Date(Number(viewMonth.slice(0, 4)), mm - 1, d);
+    els.dailyTip.textContent =
+      `${new Intl.DateTimeFormat(undefined, { weekday: "short" }).format(dt)} ${d}` +
+      (daily.data[idx] > 0 ? " · " + money(daily.data[idx]) : "");
+    els.dailyTip.style.display = daily.data[idx] > 0 ? "block" : "none";
+    const bw = (rect.width - padL - padR) / dim;
+    els.dailyTip.style.left = (padL + bw * (d - 1) + bw / 2) + "px";
+    const barH = daily.data[idx] > 0 ? (1 - daily.data[idx] / daily.niceMax(Math.max(...daily.data) * 1.05)) * (rect.height - 38) + 18 : rect.height - 38;
+    els.dailyTip.style.top = Math.max(30, barH) + "px";
+  };
+  c.addEventListener("pointermove", move);
+  c.addEventListener("pointerleave", () => {
+    daily.hover = -1;
+    daily.draw();
+    els.dailyTip.style.display = "none";
+  });
+}
+
+/* ---------- donut ---------- */
+
+const donut = {
+  draw() {
+    const c = els.donutCanvas;
+    const dpr = window.devicePixelRatio || 1;
+    const size = 170;
+    c.width = size * dpr;
+    c.height = size * dpr;
+    const x = c.getContext("2d");
+    x.setTransform(dpr, 0, 0, dpr, 0, 0);
+    x.clearRect(0, 0, size, size);
+
+    const entries = breakdown(viewMonth);
+    const total = entries.reduce((a, e) => a + e.amount, 0);
+    els.dcAmount.textContent = total > 0 ? money(total, { cents: false }) : money(0, { cents: false });
+
+    // track ring
+    x.lineWidth = 26;
+    x.strokeStyle = "rgba(255,255,255,0.06)";
+    x.beginPath();
+    x.arc(85, 85, 72, 0, Math.PI * 2);
+    x.stroke();
+
+    if (total <= 0) return;
+
+    let a0 = -Math.PI / 2;
+    const gap = 0.028; // radians between slices
+    for (const e of entries) {
+      const frac = e.amount / total;
+      const a1 = a0 + frac * Math.PI * 2;
+      if (a1 - a0 > gap * 2) {
+        x.lineWidth = 26;
+        x.strokeStyle = e.cat.color;
+        x.beginPath();
+        x.arc(85, 85, 72, a0 + gap / 2, a1 - gap / 2);
+        x.stroke();
+      }
+      a0 = a1;
+    }
+
+    // inner cutoff for ring look
+    x.globalCompositeOperation = "destination-out";
+    x.beginPath();
+    x.arc(85, 85, 58, 0, Math.PI * 2);
+    x.fill();
+    x.globalCompositeOperation = "source-over";
+  },
+};
+
+function renderLegend() {
+  const entries = breakdown(viewMonth);
+  const total = entries.reduce((a, e) => a + e.amount, 0);
+  const top = entries.slice(0, 5);
+  const rest = entries.slice(5);
+  const rows = top.map((e) => ({ cat: e.cat, amount: e.amount }));
+  if (rest.length) {
+    rows.push({
+      cat: { emoji: "✨", name: "Other", color: "#94a3b8" },
+      amount: rest.reduce((a, e) => a + e.amount, 0),
+    });
+  }
+  els.legend.innerHTML = "";
+  if (!total) {
+    const d = document.createElement("div");
+    d.className = "lempty";
+    d.textContent = "No categories yet this month";
+    els.legend.appendChild(d);
+    return;
+  }
+  for (const r of rows) {
+    const pct = Math.round((r.amount / total) * 100);
+    const div = document.createElement("div");
+    div.className = "lrow";
+    div.innerHTML = `
+      <span class="ldot" style="background:${r.cat.color}22"></span>
+      <span class="lname"></span>
+      <span class="lval"></span>
+    `;
+    div.children[0].textContent = r.cat.emoji;
+    div.children[0].style.color = r.cat.color;
+    div.children[1].textContent = r.cat.name;
+    div.children[2].textContent = `${money(r.amount)} · ${pct}%`;
+    els.legend.appendChild(div);
+  }
+}
+
+/* ---------- transactions list ---------- */
+
+function matchesSearch(t, q) {
+  const hay = (t.note + " " + (catById(t.cat)?.name || "")).toLowerCase();
+  return hay.includes(q);
+}
+
+function renderList() {
+  const q = els.search.value.trim().toLowerCase();
+  let txns = txnsInMonth(viewMonth);
+  const inMonth = txns.length;
+  if (q) txns = txns.filter((t) => matchesSearch(t, q));
+  txns.sort((a, b) =>
+    b.date.localeCompare(a.date) || b.createdAt - a.createdAt
+  );
+
+  els.listGroups.innerHTML = "";
+  if (!txns.length) {
+    const msg = document.createElement("div");
+    msg.className = "lemptymsg";
+    msg.textContent = inMonth
+      ? "Nothing matches that search."
+      : viewMonth === nowMonth()
+        ? "No expenses yet this month."
+        : "Nothing recorded that month.";
+    els.listGroups.appendChild(msg);
+    return;
+  }
+
+  // group consecutive txns by day
+  let group = null;
+  let groupDate = null;
+  let groupTotal = 0;
+  const pushGroup = () => {
+    if (!group) return;
+    const gdate = document.createElement("div");
+    gdate.className = "gdate";
+    const label = document.createElement("span");
+    label.textContent =
+      groupDate === todayISO() ? "Today" :
+      groupDate === todayMinus1ISO() ? "Yesterday" :
+      dayLongLabel(groupDate);
+    const gt = document.createElement("span");
+    gt.className = "gsub";
+    gt.textContent = money(groupTotal);
+    gdate.append(label, gt);
+    group.prepend(gdate);
+  };
+
+  for (const t of txns) {
+    if (t.date !== groupDate) {
+      pushGroup();
+      groupDate = t.date;
+      groupTotal = 0;
+      group = document.createElement("div");
+      group.className = "group";
+      els.listGroups.appendChild(group);
+    }
+    groupTotal += t.amount;
+    group.appendChild(rowEl(t));
+  }
+  pushGroup();
+}
+
+function rowEl(t) {
+  const cat = catById(t.cat) || fallbackCat();
+  const div = document.createElement("div");
+  div.className = "row" + (t.id === lastFlashId ? " new" : "");
+  div.dataset.id = t.id;
+  div.innerHTML = `
+    <span class="remoji" style="background:${cat.color}22; color:${cat.color}"></span>
+    <div class="rmeta">
+      <div class="rnote"></div>
+      <div class="rcat"></div>
+    </div>
+    <span class="ramount"></span>
+    <button class="rdel" type="button" aria-label="Delete">×</button>
+  `;
+  div.children[0].textContent = cat.emoji;
+  div.children[1].children[0].textContent = t.note || cat.name;
+  div.children[1].children[1].textContent = cat.name;
+  div.children[2].textContent = money(t.amount);
+  return div;
+}
+
+/* ---------- quick-add chips & suggestions ---------- */
+
+function renderChips() {
+  els.chips.innerHTML = "";
+  for (const c of db.cats) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = `${c.emoji} ${c.name}`;
+    b.classList.toggle("on", c.id === selectedCat);
+    b.addEventListener("click", () => { selectedCat = c.id; renderChips(); });
+    els.chips.appendChild(b);
+  }
+  if (!db.cats.some((c) => c.id === selectedCat)) {
+    selectedCat = (db.cats[0] || fallbackCat()).id;
+    renderChips();
+  }
+}
+
+function renderNotesSuggestions() {
+  const seen = new Map();
+  for (const t of db.txns) {
+    if (t.note && !seen.has(t.note.toLowerCase())) seen.set(t.note.toLowerCase(), t.note);
+  }
+  els.notesList.replaceChildren(
+    ...[...seen.values()].slice(0, 40).map((n) => {
+      const o = document.createElement("option");
+      o.value = n;
+      return o;
+    })
+  );
+}
+
+/* ---------- misc renders ---------- */
+
+function renderEmptyHero() {
+  els.emptyHero.classList.toggle("show", db.txns.length === 0);
+}
+
+function renderAll() {
+  renderMonthbar();
+  renderBudget();
+  renderStats();
+  daily.setData();
+  donut.draw();
+  renderLegend();
+  renderList();
+  renderChips();
+  renderNotesSuggestions();
+  renderEmptyHero();
+  lastFlashId = null;
+}
+
+/* ============================== toast ============================== */
+
+let toastTimer = null;
+let toastUndo = null;
+
+function toast(msg, undoFn, ms = 4000) {
+  els.toast.innerHTML = "";
+  const span = document.createElement("span");
+  span.textContent = msg;
+  els.toast.appendChild(span);
+  if (undoFn) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = "Undo";
+    b.addEventListener("click", () => { hideToast(); undoFn(); });
+    els.toast.appendChild(b);
+  }
+  toastUndo = undoFn || null;
+  els.toast.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(hideToast, ms);
+}
+function hideToast() {
+  els.toast.classList.remove("show");
+  clearTimeout(toastTimer);
+  toastUndo = null;
+}
+
+/* ============================== mutate actions ============================== */
+
+function addTxn({ date, amount, cat, note }) {
+  const t = { id: newId(), date, amount, cat, note, createdAt: Date.now() };
+  db.txns.push(t);
+  save();
+  viewMonth = monthOf(date); // sync the view with what the user just recorded
+  lastFlashId = t.id;
+  renderAll();
+  return t;
+}
+
+function updateTxn(id, patch) {
+  const t = db.txns.find((x) => x.id === id);
+  if (!t) return;
+  Object.assign(t, patch);
+  save();
+  lastFlashId = id;
+  renderAll();
+}
+
+function deleteTxn(id) {
+  const idx = db.txns.findIndex((x) => x.id === id);
+  if (idx < 0) return;
+  const [removed] = db.txns.splice(idx, 1);
+  if (editingId === id) cancelEdit();
+  save();
+  renderAll();
+  toast(`Deleted “${truncate(removed.note || (catById(removed.cat) || fallbackCat()).name)}”`, () => {
+    db.txns.push(removed);
+    save();
+    renderAll();
+  });
+}
+
+function truncate(s, n = 22) {
+  return s.length > n ? s.slice(0, n - 1) + "…" : s;
+}
+
+/* ============================== form: add / edit ============================== */
+
+function amountValue(v) {
+  const s = String(v).trim().replace(",", "."); // tolerate 12,50
+  if (!/^\d+(\.\d+)?$/.test(s) || Number(s) <= 0 || Number(s) > 10_000_000) return null;
+  return Math.round(Number(s) * 100) / 100;
+}
+
+els.quick.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const amt = amountValue(els.amount.value);
+  if (amt === null) {
+    toast("Enter a valid amount, e.g. 12.50");
+    els.amount.focus();
+    return;
+  }
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(els.date.value) ? els.date.value : todayISO();
+  const patch = { amount: amt, cat: selectedCat, note: els.note.value.trim() };
+  if (editingId) {
+    updateTxn(editingId, patch);
+    toast("Updated");
+    cancelEdit();
+  } else {
+    addTxn({ date, ...patch });
+  }
+  els.amount.value = "";
+  els.note.value = "";
+  els.amount.focus();
+});
+
+function beginEdit(id) {
+  const t = db.txns.find((x) => x.id === id);
+  if (!t) return;
+  editingId = id;
+  els.amount.value = String(Math.round(t.amount * 100) / 100);
+  els.note.value = t.note || "";
+  els.date.value = t.date;
+  if (catById(t.cat)) selectedCat = t.cat;
+  renderChips();
+  els.editBannerText.textContent = `Editing “${truncate(t.note || (catById(t.cat) || fallbackCat()).name, 26)}” · ${dayLongLabel(t.date)}`;
+  els.editBanner.classList.add("show");
+  els.addBtn.textContent = "Save";
+  els.amount.focus();
+  els.amount.select();
+}
+
+function cancelEdit() {
+  if (!editingId && !els.editBanner.classList.contains("show")) return;
+  editingId = null;
+  els.editBanner.classList.remove("show");
+  els.amount.value = "";
+  els.note.value = "";
+  els.addBtn.textContent = "Add";
+  renderChips();
+}
+
+els.cancelEdit.addEventListener("click", cancelEdit);
+
+/* ---------- list interactions (event delegation) ---------- */
+
+els.listGroups.addEventListener("click", (e) => {
+  const del = e.target.closest(".rdel");
+  const row = e.target.closest(".row");
+  if (!row) return;
+  const id = row.dataset.id;
+  if (del) deleteTxn(id);
+  else beginEdit(id);
+});
+
+els.search.addEventListener("input", () => {
+  renderList();
+});
+
+/* ============================== month nav ============================== */
+
+els.prevM.addEventListener("click", () => { viewMonth = shiftMonth(viewMonth, -1); renderAll(); });
+els.nextM.addEventListener("click", () => { viewMonth = shiftMonth(viewMonth, 1); renderAll(); });
+
+/* ============================== settings ============================== */
+
+function openSettings(focusWhat) {
+  els.budgetInput.value = db.budget === null ? "" : String(db.budget);
+  els.symbolInput.value = db.symbol;
+  renderCatEditor();
+  els.settings.showModal();
+  if (focusWhat === "focusBudget") els.budgetInput.focus();
+}
+
+$("btnSettings").addEventListener("click", () => openSettings());
+$("closeSettings").addEventListener("click", () => els.settings.close());
+
+function applyBasicSettings() {
+  const b = Number(els.budgetInput.value);
+  db.budget = Number.isFinite(b) && b > 0 ? Math.round(b) : null;
+  db.symbol = sanitizeSymbol(els.symbolInput.value);
+  save();
+}
+
+let settingsDirty = false;
+for (const el of [els.budgetInput, els.symbolInput]) {
+  el.addEventListener("change", () => { applyBasicSettings(); renderAll(); });
+  el.addEventListener("input", () => { settingsDirty = true; });
+}
+els.settings.addEventListener("close", () => { if (settingsDirty) { applyBasicSettings(); renderAll(); settingsDirty = false; } });
+
+/* ---------- category editor ---------- */
+
+function catUsage(id) {
+  return db.txns.filter((t) => t.cat === id).length;
+}
+
+function renderCatEditor() {
+  els.catList.innerHTML = "";
+  for (const c of db.cats) {
+    const row = document.createElement("div");
+    row.className = "crow";
+    row.innerHTML = `
+      <input class="cem" maxlength="2" value="${attr(c.emoji)}" aria-label="Emoji">
+      <input class="cname" maxlength="18" value="${attr(c.name)}" aria-label="Name">
+      <button class="cdel" type="button" aria-label="Delete category">×</button>
+    `;
+    row.children[0].addEventListener("change", (e) => {
+      c.emoji = e.target.value.trim() || "✨";
+      e.target.value = c.emoji;
+      save(); renderChips();
+    });
+    row.children[1].addEventListener("change", (e) => {
+      c.name = e.target.value.trim() || c.name;
+      e.target.value = c.name;
+      save(); renderChips(); renderAll();
+    });
+    row.children[2].addEventListener("click", () => {
+      const used = catUsage(c.id);
+      if (used > 0) {
+        toast(`${c.name} is used by ${used} transaction${used === 1 ? "" : "s"} — remove those first`);
+        return;
+      }
+      db.cats = db.cats.filter((x) => x.id !== c.id);
+      if (selectedCat === c.id) selectedCat = (db.cats[0] || fallbackCat()).id;
+      save();
+      renderCatEditor();
+      renderChips();
+    });
+    els.catList.appendChild(row);
+  }
+}
+
+const attr = (s) => String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+
+$("addCatBtn").addEventListener("click", () => {
+  const emoji = els.newCatEmoji.value.trim() || "✨";
+  const name = els.newCatName.value.trim();
+  if (!name) { toast("Give the category a name"); els.newCatName.focus(); return; }
+  db.cats.push({ id: "c" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), emoji, name, color: nextColor() });
+  els.newCatEmoji.value = "";
+  els.newCatName.value = "";
+  save();
+  renderCatEditor();
+  renderChips();
+  toast(`Added ${emoji} ${name}`);
+});
+
+const PALETTE = ["#34d399", "#60a5fa", "#f472b6", "#fbbf24", "#e879f9", "#38bdf8", "#fb7185", "#a3e635", "#f97362", "#a78bfa"];
+function nextColor() {
+  const used = new Set(db.cats.map((c) => c.color));
+  const free = PALETTE.find((p) => !used.has(p));
+  return free || PALETTE[db.cats.length % PALETTE.length];
+}
+
+/* ---------- backup / export / import ---------- */
+
+function download(name, text, mime) {
+  const blob = new Blob([text], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+$("btnExportJson").addEventListener("click", () => {
+  download(`ledger-backup-${todayISO()}.json`, JSON.stringify(db, null, 2), "application/json");
+  toast("Backup downloaded");
+});
+
+$("btnExportCsv").addEventListener("click", () => {
+  const esc = (v) => /[",\n]/.test(v) ? '"' + String(v).replace(/"/g, '""') + '"' : String(v);
+  const rows = [["date", "amount", "category", "note"].join(",")];
+  for (const t of db.txns.slice().sort((a, b) => a.date.localeCompare(b.date))) {
+    rows.push([t.date, t.amount.toFixed(2), esc((catById(t.cat) || fallbackCat()).name), esc(t.note)].join(","));
+  }
+  download(`ledger-${todayISO()}.csv`, "\uFEFF" + rows.join("\n"), "text/csv");
+  toast("CSV downloaded (opens in Excel / Sheets)");
+});
+
+$("btnImportJson").addEventListener("click", () => els.importFile.click());
+els.importFile.addEventListener("change", async () => {
+  const file = els.importFile.files[0];
+  els.importFile.value = "";
+  if (!file) return;
+  try {
+    const parsed = migrate(JSON.parse(await file.text()));
+    const n = parsed.txns.length;
+    if (!n && !parsed.cats.length) throw new Error("empty");
+    if (!confirm(`Replace current data with ${n} transaction${n === 1 ? "" : "s"} from this backup?`)) return;
+    db = parsed;
+    selectedCat = (db.cats[0] || fallbackCat()).id;
+    save();
+    renderAll();
+    els.settings.close();
+    toast(`Restored ${n} transaction${n === 1 ? "" : "s"}`);
+  } catch {
+    toast("That file doesn’t look like a Pocket Ledger backup");
+  }
+});
+
+$("btnClear").addEventListener("click", () => {
+  const n = db.txns.length;
+  if (!n) { toast("Nothing to clear"); return; }
+  if (!confirm(`Delete all ${n} transactions? This cannot be undone.`)) return;
+  const backup = db.txns;
+  db.txns = [];
+  cancelEdit();
+  save();
+  renderAll();
+  toast(`Cleared ${n} transaction${n === 1 ? "" : "s"}`, () => {
+    db.txns = backup;
+    save();
+    renderAll();
+  }, 6000);
+  els.settings.close();
+});
+
+/* ============================== sample data ============================== */
+
+const SAMPLE = {
+  food:      { notes: ["Coffee and bagel", "Lunch with Maya", "Ramen", "Bakery run", "Burgers"],        range: [3, 18] },
+  groceries: { notes: ["Weekly groceries", "Veggies and milk", "Corner store"],                        range: [12, 60] },
+  transport: { notes: ["Metro card", "Fuel", "Taxi home", "Bus fare"],                                 range: [2.5, 45] },
+  home:      { notes: ["Cleaning spray", "Lightbulbs", "Plant pot"],                                   range: [6, 35] },
+  fun:       { notes: ["Cinema", "Board game night", "Concert ticket", "Bowling"],                     range: [8, 65] },
+  health:    { notes: ["Pharmacy", "Gym drop-in", "Vitamins"],                                         range: [5, 40] },
+  bills:     { notes: ["Electricity", "Internet bill", "Phone plan"],                                  range: [40, 90] },
+  shopping:  { notes: ["New headphones", "T-shirt", "Running socks"],                                  range: [15, 120] },
+  other:     { notes: ["Charity", "Gift wrap", "Copy keys"],                                           range: [4, 30] },
+};
+
+function makeSample() {
+  const txns = [];
+  const today = todayISO();
+  const lastMonth = shiftMonth(nowMonth(), -1);
+
+  const push = (date) => {
+    const ids = db.cats.map((c) => c.id).filter((id) => SAMPLE[id]);
+    const cat = ids[Math.floor(Math.random() * ids.length)];
+    const [lo, hi] = SAMPLE[cat].range;
+    const v = lo + Math.random() * (hi - lo);
+    const cents = Math.random() < 0.5 ? Math.round(v) : Math.round(v * 100) / 100;
+    const notes = SAMPLE[cat].notes;
+    txns.push({
+      id: newId(),
+      date,
+      amount: cents,
+      cat,
+      note: notes[Math.floor(Math.random() * notes.length)],
+      createdAt: Date.parse(date + "T12:" + pad(Math.floor(Math.random() * 60)) + ":00"),
+    });
+  };
+
+  // current month: spread over days so far
+  const upTo = Number(today.slice(8, 10));
+  const count = Math.max(14, Math.min(upTo * 2, 26));
+  for (let i = 0; i < count; i++) {
+    const day = 1 + Math.floor(Math.random() * upTo);
+    push(`${viewMonth}-${pad(day)}`);
+  }
+  // previous month for the comparison stat
+  const dimPrev = daysInMonth(lastMonth);
+  for (let i = 0; i < 10; i++) {
+    push(`${lastMonth}-${pad(1 + Math.floor(Math.random() * dimPrev))}`);
+  }
+  return txns;
+}
+
+function loadSample() {
+  cancelEdit();
+  const sample = makeSample();
+  const wasBudgetNull = db.budget === null;
+  db.txns = db.txns.concat(sample);
+  if (wasBudgetNull) db.budget = 900;
+  save();
+  if (els.settings.open) els.settings.close();
+  renderAll();
+  toast(
+    `${sample.length} sample transactions added${wasBudgetNull ? " · sample budget of 900 set (adjust in settings)" : ""}`,
+    null,
+    5000
+  );
+}
+
+$("btnSample").addEventListener("click", () => { if (confirmSample()) loadSample(); });
+$("btnHero2").addEventListener("click", () => loadSample());
+$("btnHero1").addEventListener("click", () => els.amount.focus());
+function confirmSample() {
+  if (db.txns.length === 0) return true;
+  return confirm("Add sample data on top of your existing transactions?");
+}
+
+/* ============================== keyboard ============================== */
+
+document.addEventListener("keydown", (e) => {
+  if (els.settings.open) return;
+  if (e.target.tagName === "INPUT" || e.target.tagName === "DIALOG") return;
+  if (e.key === "Escape") { if (editingId) cancelEdit(); return; }
+  if (e.key === "/" || e.key.toLowerCase() === "n") {
+    e.preventDefault();
+    els.amount.focus();
+    els.amount.select();
+  }
+});
+
+/* ============================== boot ============================== */
+
+bindDailyHover();
+let resizeTimer = null;
+window.addEventListener("resize", () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => daily.draw(), 150);
+});
+els.date.value = todayISO();
+renderAll();
+
+})();
+</script>
+</body>
+</html>
