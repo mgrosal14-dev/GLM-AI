@@ -340,14 +340,18 @@
     color: #59627a; font-size: 11.5px;
   }
   .authdiv::before, .authdiv::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+  /* the official Google sign-in button */
   .gbtn {
     display: flex; align-items: center; justify-content: center; gap: 10px;
-    width: 100%; padding: 10px 12px; border-radius: 11px;
-    background: #f1f3f4; color: #131314; font-weight: 650; font-size: 13.5px;
-    transition: filter .15s;
+    width: 100%; height: 40px; padding: 8px 16px; border-radius: 999px;
+    background: #ffffff; border: 1px solid #747775; color: #1f1f1f;
+    font-family: Roboto, "Segoe UI", system-ui, sans-serif;
+    font-size: 14px; font-weight: 500; letter-spacing: normal;
+    transition: background-color .15s, box-shadow .15s, border-color .15s;
   }
-  .gbtn:hover { filter: brightness(1.06); }
-  .gbtn svg { width: 18px; height: 18px; flex: 0 0 auto; }
+  .gbtn:hover { background: #f8f9fa; box-shadow: 0 -1px 0 rgba(0,0,0,.04), 0 2px 4px rgba(0,0,0,.25); }
+  .gbtn:active { background: #f1f3f4; box-shadow: none; }
+  .gbtn svg { width: 20px; height: 20px; flex: 0 0 auto; }
   .authguest {
     display: block; margin: 12px auto 0; padding: 6px 10px;
     color: var(--muted); font-size: 12.5px;
@@ -360,23 +364,6 @@
   .gbrand { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 6px 0 2px; font-size: 14px; font-weight: 650; }
   .gbrand svg { width: 20px; height: 20px; }
   .gsub { margin: 0 0 14px; text-align: center; color: var(--muted); font-size: 12.5px; }
-  .glist { display: grid; gap: 8px; }
-  .glist[hidden] { display: none; }
-  .gacct {
-    display: flex; align-items: center; gap: 11px; width: 100%; padding: 9px 11px;
-    border-radius: 12px; border: 1px solid var(--border); background: var(--card2);
-    text-align: left; transition: border-color .15s;
-  }
-  .gacct:hover { border-color: rgba(255,255,255,.2); }
-  .gacct .gav {
-    width: 34px; height: 34px; border-radius: 50%; flex: 0 0 auto;
-    display: grid; place-items: center; font-weight: 800; font-size: 14px;
-    background: var(--accent-soft); color: var(--accent);
-  }
-  .gacct .gav.plus { background: rgba(255,255,255,.06); color: var(--muted); font-weight: 500; }
-  .gacct .gmeta { display: grid; line-height: 1.35; min-width: 0; }
-  .gacct .gname { font-weight: 650; font-size: 13.5px; }
-  .gacct .gmail { color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .gnote { margin-top: 12px; text-align: center; color: #59627a; font-size: 11px; line-height: 1.5; }
   #gForm { margin-top: 12px; }
 </style>
@@ -552,7 +539,7 @@
   <div id="authGoogle" hidden>
     <div class="shead">
       <button class="gback" id="gBack" type="button" aria-label="Back">‹</button>
-      <h2>Choose an account</h2>
+      <h2>Sign in</h2>
       <span class="gspacer" aria-hidden="true"></span>
     </div>
     <div class="gbrand">
@@ -566,25 +553,9 @@
     </div>
     <p class="gsub">to continue to Pocket Ledger</p>
 
-    <div class="glist" id="gList">
-      <button class="gacct" id="gDemo" type="button">
-        <span class="gav">D</span>
-        <span class="gmeta">
-          <span class="gname">Demo account</span>
-          <span class="gmail">demo.user@gmail.com</span>
-        </span>
-      </button>
-      <button class="gacct" id="gAnother" type="button">
-        <span class="gav plus">+</span>
-        <span class="gmeta">
-          <span class="gname">Use another account</span>
-        </span>
-      </button>
-    </div>
-
     <div class="autherr" id="gErr"></div>
 
-    <form id="gForm" hidden novalidate autocomplete="off">
+    <form id="gForm" novalidate autocomplete="off">
       <label class="slabel" for="gName">Name</label>
       <input id="gName" type="text" maxlength="30" placeholder="Your name">
       <label class="slabel" for="gEmail">Google email</label>
@@ -705,6 +676,23 @@ try {
   }
 } catch { /* storage unavailable */ }
 
+// tidy-up: retire the demo account that earlier versions offered in the Google chooser
+try {
+  const accounts = getUsers();
+  const demo = accounts.find((u) => u.provider === "google" && u.email === "demo.user@gmail.com");
+  if (demo) {
+    const demoSpace = readRaw(userKey(demo.id));
+    const demoBusy = !!demoSpace && ((Array.isArray(demoSpace.txns) && demoSpace.txns.length > 0) || demoSpace.budget != null);
+    const guestSpace = readRaw(GUEST_KEY);
+    const guestBusy = !!guestSpace && ((Array.isArray(guestSpace.txns) && guestSpace.txns.length > 0) || guestSpace.budget != null);
+    if (!demoBusy || !guestBusy) { // only remove when we won't strand any data
+      if (demoBusy) localStorage.setItem(GUEST_KEY, JSON.stringify(demoSpace)); // rescue its data into the empty guest space
+      saveUsers(accounts.filter((u) => u.id !== demo.id));
+      localStorage.removeItem(userKey(demo.id));
+    }
+  }
+} catch { /* storage unavailable */ }
+
 let session = (() => {
   const s = readRaw(SESSION_KEY);
   return s && typeof s.id === "string" && getUsers().some((u) => u.id === s.id) ? s.id : null;
@@ -807,7 +795,7 @@ const els = {
   signupErr: $("signupErr"), loginErr: $("loginErr"),
   suName: $("suName"), suEmail: $("suEmail"), suPass: $("suPass"),
   liEmail: $("liEmail"), liPass: $("liPass"),
-  gList: $("gList"), gForm: $("gForm"), gName: $("gName"),
+  gForm: $("gForm"), gName: $("gName"),
   gEmail: $("gEmail"), gErr: $("gErr"),
 };
 
@@ -1655,8 +1643,6 @@ function showAuthView(view) {
   els.authMain.hidden = google;
   els.authGoogle.hidden = !google;
   if (google) {
-    els.gList.hidden = false;
-    els.gForm.hidden = true;
     const prefill = els.suEmail.value.trim() || els.liEmail.value.trim();
     if (prefill && !els.gEmail.value) els.gEmail.value = prefill;
     if (!els.gName.value.trim() && els.suName.value.trim()) els.gName.value = els.suName.value.trim();
@@ -1809,13 +1795,6 @@ async function finishGoogleSignIn(res) {
   toast(res.fresh ? `Signed in with Google as ${res.user.email}` : `Welcome back, ${res.user.name}`);
 }
 
-$("gDemo").addEventListener("click", async (e) => {
-  const btn = e.currentTarget;
-  btn.disabled = true;
-  await finishGoogleSignIn(await googleSignIn("Demo User", "demo.user@gmail.com"));
-  btn.disabled = false;
-});
-
 els.gForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const btn = $("gGo");
@@ -1824,14 +1803,6 @@ els.gForm.addEventListener("submit", async (e) => {
   btn.disabled = false;
 });
 
-$("gAnother").addEventListener("click", () => {
-  els.gList.hidden = true;
-  els.gForm.hidden = false;
-  const prefill = els.suEmail.value.trim() || els.liEmail.value.trim();
-  if (prefill) els.gEmail.value = prefill;
-  if (!els.gName.value.trim() && els.suName.value.trim()) els.gName.value = els.suName.value.trim();
-  els.gEmail.focus();
-});
 $("gBack").addEventListener("click", () => showAuthView("main"));
 
 /* ============================== sample data ============================== */
