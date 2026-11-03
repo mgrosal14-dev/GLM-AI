@@ -43,7 +43,8 @@
   }
 
   /* ---------- top bar ---------- */
-  .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; row-gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .wordmark { flex: 0 0 auto; }
   .wordmark { display: flex; align-items: center; gap: 9px; font-size: 16px; font-weight: 700; letter-spacing: .01em; }
   .wordmark .logo {
     width: 32px; height: 32px; display: grid; place-items: center;
@@ -272,6 +273,112 @@
   }
   #toast.show { transform: translateX(-50%); opacity: 1; }
   #toast button { color: var(--accent); font-weight: 700; font-size: 13.5px; }
+
+  /* ---------- auth (topbar + dialog) ---------- */
+  .top-actions { display: flex; align-items: center; gap: 8px; }
+  .authbtn {
+    height: 34px; padding: 0 14px; border-radius: 10px;
+    background: var(--accent); color: #06281d; font-weight: 800; font-size: 13px;
+    letter-spacing: .01em; transition: filter .15s;
+  }
+  .authbtn:hover { filter: brightness(1.1); }
+  .authbtn.out {
+    background: var(--card); color: var(--muted);
+    border: 1px solid var(--border); font-weight: 650; letter-spacing: 0;
+    transition: color .15s, border-color .15s;
+  }
+  .authbtn.out:hover { color: var(--warm); border-color: rgba(251,113,133,.35); filter: none; }
+  .userchip {
+    display: flex; align-items: center; gap: 7px; height: 34px; padding: 0 11px 0 4px;
+    border-radius: 999px; background: var(--card); border: 1px solid var(--border);
+    font-size: 12.5px; font-weight: 650; max-width: 170px;
+  }
+  .userchip[hidden] { display: none; }
+  .userchip .avatar {
+    width: 26px; height: 26px; border-radius: 50%; flex: 0 0 auto;
+    display: grid; place-items: center; background: var(--accent-soft);
+    color: var(--accent); font-size: 12px; font-weight: 800;
+  }
+  .userchip .uname { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+  #auth { position: relative; width: min(400px, 92vw); }
+  .aclose { position: absolute; top: 12px; right: 12px; width: 30px; height: 30px; border-radius: 9px; color: var(--muted); font-size: 17px; }
+  .aclose:hover { background: rgba(255,255,255,.07); }
+  .authhead { display: grid; justify-items: center; text-align: center; margin: 4px 0 14px; }
+  .authhead .alogo {
+    width: 48px; height: 48px; border-radius: 14px; margin-bottom: 10px;
+    background: var(--accent-soft); display: grid; place-items: center; font-size: 24px;
+  }
+  .authhead h2 { margin: 0 0 4px; font-size: 19px; }
+  .authhead p { margin: 0; color: var(--muted); font-size: 12.5px; }
+  .authtabs {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 4px;
+    background: var(--card2); border: 1px solid var(--border); border-radius: 12px;
+    margin-bottom: 14px;
+  }
+  .authtabs button {
+    padding: 8px 10px; border-radius: 9px; font-size: 13px; font-weight: 700;
+    color: var(--muted); transition: background .15s, color .15s;
+  }
+  .authtabs button.on { background: var(--card); color: var(--text); box-shadow: 0 2px 8px rgba(0,0,0,.35); }
+  .authform { display: none; }
+  .authform.on { display: block; }
+  .authform .fld { margin-bottom: 10px; }
+  dialog input[type="email"], dialog input[type="password"] {
+    width: 100%; padding: 9px 12px; background: var(--card2);
+    border: 1px solid var(--border); border-radius: 10px;
+  }
+  dialog input[type="email"]:focus, dialog input[type="password"]:focus { outline: none; border-color: var(--accent); }
+  .autherr {
+    display: none; margin: 0 0 10px; padding: 7px 10px; border-radius: 9px;
+    background: rgba(251,113,133,.1); color: var(--warm); font-size: 12.5px;
+  }
+  .autherr.show { display: block; }
+  .authsubmit { width: 100%; margin-top: 2px; }
+  .authdiv {
+    display: flex; align-items: center; gap: 10px; margin: 13px 0;
+    color: #59627a; font-size: 11.5px;
+  }
+  .authdiv::before, .authdiv::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+  .gbtn {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    width: 100%; padding: 10px 12px; border-radius: 11px;
+    background: #f1f3f4; color: #131314; font-weight: 650; font-size: 13.5px;
+    transition: filter .15s;
+  }
+  .gbtn:hover { filter: brightness(1.06); }
+  .gbtn svg { width: 18px; height: 18px; flex: 0 0 auto; }
+  .authguest {
+    display: block; margin: 12px auto 0; padding: 6px 10px;
+    color: var(--muted); font-size: 12.5px;
+  }
+  .authguest:hover { color: var(--text); text-decoration: underline; }
+  .authfoot { margin-top: 13px; text-align: center; color: #59627a; font-size: 11px; line-height: 1.5; }
+  .gback { width: 30px; height: 30px; border-radius: 9px; color: var(--muted); font-size: 17px; }
+  .gback:hover { background: rgba(255,255,255,.07); color: var(--text); }
+  .gspacer { width: 30px; height: 30px; }
+  .gbrand { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 6px 0 2px; font-size: 14px; font-weight: 650; }
+  .gbrand svg { width: 20px; height: 20px; }
+  .gsub { margin: 0 0 14px; text-align: center; color: var(--muted); font-size: 12.5px; }
+  .glist { display: grid; gap: 8px; }
+  .glist[hidden] { display: none; }
+  .gacct {
+    display: flex; align-items: center; gap: 11px; width: 100%; padding: 9px 11px;
+    border-radius: 12px; border: 1px solid var(--border); background: var(--card2);
+    text-align: left; transition: border-color .15s;
+  }
+  .gacct:hover { border-color: rgba(255,255,255,.2); }
+  .gacct .gav {
+    width: 34px; height: 34px; border-radius: 50%; flex: 0 0 auto;
+    display: grid; place-items: center; font-weight: 800; font-size: 14px;
+    background: var(--accent-soft); color: var(--accent);
+  }
+  .gacct .gav.plus { background: rgba(255,255,255,.06); color: var(--muted); font-weight: 500; }
+  .gacct .gmeta { display: grid; line-height: 1.35; min-width: 0; }
+  .gacct .gname { font-weight: 650; font-size: 13.5px; }
+  .gacct .gmail { color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .gnote { margin-top: 12px; text-align: center; color: #59627a; font-size: 11px; line-height: 1.5; }
+  #gForm { margin-top: 12px; }
 </style>
 </head>
 <body>
@@ -279,7 +386,14 @@
 
   <div class="topbar">
     <div class="wordmark"><span class="logo">💳</span> Pocket Ledger</div>
-    <button class="iconbtn" id="btnSettings" aria-label="Settings" title="Settings">⚙</button>
+    <div class="top-actions">
+      <div class="userchip" id="userchip" hidden>
+        <span class="avatar" id="userchipAv"></span>
+        <span class="uname" id="userchipName"></span>
+      </div>
+      <button class="iconbtn" id="btnSettings" aria-label="Settings" title="Settings">⚙</button>
+      <button class="authbtn" id="btnAuth" type="button">Log in / Sign up</button>
+    </div>
   </div>
 
   <!-- quick add -->
@@ -373,6 +487,115 @@
   <input id="importFile" type="file" accept=".json,application/json" hidden>
 </dialog>
 
+<dialog id="auth" aria-labelledby="authTitle">
+  <button class="aclose" id="authClose" type="button" aria-label="Close">✕</button>
+
+  <div id="authMain">
+    <div class="authhead">
+      <div class="alogo">💳</div>
+      <h2 id="authTitle">Welcome to Pocket Ledger</h2>
+      <p>Create a free account to keep your ledger, or continue as a guest.</p>
+    </div>
+
+    <div class="authtabs" role="tablist" aria-label="Sign up or log in">
+      <button type="button" id="tabSignup" class="on" role="tab" aria-selected="true">Sign up</button>
+      <button type="button" id="tabLogin" role="tab" aria-selected="false">Log in</button>
+    </div>
+
+    <form id="signupForm" class="authform on" novalidate>
+      <div class="autherr" id="signupErr"></div>
+      <div class="fld">
+        <label class="slabel" for="suName">Name</label>
+        <input id="suName" type="text" maxlength="30" placeholder="Alex" autocomplete="name">
+      </div>
+      <div class="fld">
+        <label class="slabel" for="suEmail">Email</label>
+        <input id="suEmail" type="email" placeholder="alex@gmail.com" autocomplete="email">
+      </div>
+      <div class="fld">
+        <label class="slabel" for="suPass">Password</label>
+        <input id="suPass" type="password" placeholder="At least 6 characters" autocomplete="new-password">
+      </div>
+      <button class="primebtn authsubmit" id="suBtn" type="submit">Create account</button>
+    </form>
+
+    <form id="loginForm" class="authform" novalidate>
+      <div class="autherr" id="loginErr"></div>
+      <div class="fld">
+        <label class="slabel" for="liEmail">Email</label>
+        <input id="liEmail" type="email" placeholder="you@gmail.com" autocomplete="email">
+      </div>
+      <div class="fld">
+        <label class="slabel" for="liPass">Password</label>
+        <input id="liPass" type="password" placeholder="Your password" autocomplete="current-password">
+      </div>
+      <button class="primebtn authsubmit" id="liBtn" type="submit">Log in</button>
+    </form>
+
+    <div class="authdiv">or continue with</div>
+
+    <button class="gbtn" id="btnGoogle" type="button">
+      <svg viewBox="0 0 48 48" aria-hidden="true">
+        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+      </svg>
+      Continue with Google
+    </button>
+
+    <button class="authguest" id="btnGuest" type="button">Skip for now — continue as guest →</button>
+
+    <div class="authfoot">Accounts live only in this browser · passwords are hashed locally · nothing is ever sent to a server</div>
+  </div>
+
+  <div id="authGoogle" hidden>
+    <div class="shead">
+      <button class="gback" id="gBack" type="button" aria-label="Back">‹</button>
+      <h2>Choose an account</h2>
+      <span class="gspacer" aria-hidden="true"></span>
+    </div>
+    <div class="gbrand">
+      <svg viewBox="0 0 48 48" aria-hidden="true">
+        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+      </svg>
+      Google
+    </div>
+    <p class="gsub">to continue to Pocket Ledger</p>
+
+    <div class="glist" id="gList">
+      <button class="gacct" id="gDemo" type="button">
+        <span class="gav">D</span>
+        <span class="gmeta">
+          <span class="gname">Demo account</span>
+          <span class="gmail">demo.user@gmail.com</span>
+        </span>
+      </button>
+      <button class="gacct" id="gAnother" type="button">
+        <span class="gav plus">+</span>
+        <span class="gmeta">
+          <span class="gname">Use another account</span>
+        </span>
+      </button>
+    </div>
+
+    <div class="autherr" id="gErr"></div>
+
+    <form id="gForm" hidden novalidate autocomplete="off">
+      <label class="slabel" for="gName">Name</label>
+      <input id="gName" type="text" maxlength="30" placeholder="Your name">
+      <label class="slabel" for="gEmail">Google email</label>
+      <input id="gEmail" type="email" placeholder="you@gmail.com" autocomplete="off">
+      <button class="primebtn authsubmit" id="gGo" type="submit">Continue</button>
+    </form>
+
+    <div class="gnote">Simulated Google sign-in for this offline demo — no Google servers are contacted and the account is stored only in this browser.</div>
+  </div>
+</dialog>
+
 <div id="toast"></div>
 
 <script>
@@ -381,7 +604,12 @@
 
 /* ============================== store ============================== */
 
-const KEY = "ledger-v1";
+const KEY = "ledger-v1"; // legacy pre-account key — folded into the guest space on boot
+const GUEST_KEY = "ledger-v1:guest";
+const USERS_KEY = "ledger-v1:users";
+const SESSION_KEY = "ledger-v1:session";
+const SEEN_AUTH_KEY = "ledger-v1:seen-auth";
+const userKey = (id) => `ledger-v1:user:${id}`;
 const DEFAULT_CATS = [
   { id: "food",      emoji: "🍔", name: "Food",      color: "#f97362" },
   { id: "groceries", emoji: "🛒", name: "Groceries", color: "#34d399" },
@@ -428,17 +656,60 @@ function migrate(raw) {
   return db;
 }
 
+function storageKey() { return session ? userKey(session) : GUEST_KEY; }
+
 function save() {
-  try { localStorage.setItem(KEY, JSON.stringify(db)); } catch { /* private mode etc. */ }
+  try { localStorage.setItem(storageKey(), JSON.stringify(db)); } catch { /* private mode etc. */ }
 }
 
 const newId = () =>
   (crypto && crypto.randomUUID) ? crypto.randomUUID() :
   "t" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 
-let db;
-try { db = migrate(JSON.parse(localStorage.getItem(KEY) || "null")); }
-catch { db = blankDb(); }
+/* ---------- local accounts (demo-grade auth — everything stays in this browser) ---------- */
+
+function readRaw(key) {
+  try { return JSON.parse(localStorage.getItem(key) || "null"); } catch { return null; }
+}
+function getUsers() {
+  const raw = readRaw(USERS_KEY);
+  return (Array.isArray(raw) ? raw : []).filter(
+    (u) => u && typeof u.id === "string" && typeof u.email === "string"
+  );
+}
+function saveUsers(users) {
+  try { localStorage.setItem(USERS_KEY, JSON.stringify(users)); } catch { /* private mode etc. */ }
+}
+async function hashPass(pass) {
+  const bytes = new TextEncoder().encode("pocket-ledger.v1::" + pass);
+  try {
+    if (crypto && crypto.subtle) {
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+      return "sha256:" + [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
+    }
+  } catch { /* fall back to the simple hash below */ }
+  let h1 = 5381, h2 = 52711;
+  for (const b of bytes) { h1 = ((h1 * 33) ^ b) >>> 0; h2 = ((h2 * 31) ^ b) >>> 0; }
+  return "djb:" + h1.toString(16) + "-" + h2.toString(16);
+}
+const validEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(v || "").trim());
+const findUserByEmail = (email) =>
+  getUsers().find((u) => u.email.toLowerCase() === String(email || "").trim().toLowerCase()) || null;
+
+// previous single-user builds kept everything under KEY: move it into the guest space
+try {
+  const legacy = localStorage.getItem(KEY);
+  if (legacy !== null) {
+    if (localStorage.getItem(GUEST_KEY) === null) localStorage.setItem(GUEST_KEY, legacy);
+    localStorage.removeItem(KEY);
+  }
+} catch { /* storage unavailable */ }
+
+let session = (() => {
+  const s = readRaw(SESSION_KEY);
+  return s && typeof s.id === "string" && getUsers().some((u) => u.id === s.id) ? s.id : null;
+})();
+let db = migrate(readRaw(storageKey()));
 
 const catById = (id) => db.cats.find((c) => c.id === id);
 const fallbackCat = () => ({ id: "other", emoji: "✨", name: "Other", color: "#94a3b8" });
@@ -530,6 +801,14 @@ const els = {
   budgetInput: $("budgetInput"), symbolInput: $("symbolInput"),
   catList: $("catList"), newCatEmoji: $("newCatEmoji"), newCatName: $("newCatName"),
   importFile: $("importFile"),
+  auth: $("auth"), authClose: $("authClose"),
+  authMain: $("authMain"), authGoogle: $("authGoogle"),
+  signupForm: $("signupForm"), loginForm: $("loginForm"),
+  signupErr: $("signupErr"), loginErr: $("loginErr"),
+  suName: $("suName"), suEmail: $("suEmail"), suPass: $("suPass"),
+  liEmail: $("liEmail"), liPass: $("liPass"),
+  gList: $("gList"), gForm: $("gForm"), gName: $("gName"),
+  gEmail: $("gEmail"), gErr: $("gErr"),
 };
 
 /* ============================== data queries ============================== */
@@ -1009,6 +1288,7 @@ function renderEmptyHero() {
 }
 
 function renderAll() {
+  renderAuthChrome();
   renderMonthbar();
   renderBudget();
   renderStats();
@@ -1323,6 +1603,237 @@ $("btnClear").addEventListener("click", () => {
   els.settings.close();
 });
 
+/* ============================== auth & accounts ==============================
+   Demo-grade, fully local auth: accounts live in localStorage and passwords are
+   only ever stored hashed. Nothing is sent anywhere — no server involved. */
+
+function setSeenAuth() {
+  try { localStorage.setItem(SEEN_AUTH_KEY, "1"); } catch { /* ignore */ }
+}
+
+const initialsFor = (name) => (String(name || "").trim()[0] || "?").toUpperCase();
+
+function renderAuthChrome() {
+  const user = session ? getUsers().find((u) => u.id === session) : null;
+  const logged = Boolean(user);
+  const btn = $("btnAuth");
+  btn.textContent = logged ? "Log out" : "Log in / Sign up";
+  btn.title = logged ? "Log out" : "Log in or create an account";
+  btn.classList.toggle("out", logged);
+  $("userchip").hidden = !logged;
+  if (logged) {
+    $("userchipAv").textContent = initialsFor(user.name);
+    $("userchipName").textContent = user.name;
+  }
+}
+
+/* ---------- the auth dialog ---------- */
+
+function openAuth(tab) {
+  showAuthView("main");
+  clearAuthErrors();
+  setAuthTab(tab || (getUsers().length ? "login" : "signup"));
+  setSeenAuth();
+  if (!els.auth.open) els.auth.showModal();
+  const signupFirst = els.signupForm.classList.contains("on");
+  requestAnimationFrame(() => (signupFirst ? els.suName : els.liEmail).focus());
+}
+
+function setAuthTab(tab) {
+  const up = tab === "signup";
+  $("tabSignup").classList.toggle("on", up);
+  $("tabLogin").classList.toggle("on", !up);
+  $("tabSignup").setAttribute("aria-selected", String(up));
+  $("tabLogin").setAttribute("aria-selected", String(!up));
+  els.signupForm.classList.toggle("on", up);
+  els.loginForm.classList.toggle("on", !up);
+  clearAuthErrors();
+}
+
+function showAuthView(view) {
+  const google = view === "google";
+  els.authMain.hidden = google;
+  els.authGoogle.hidden = !google;
+  if (google) {
+    els.gList.hidden = false;
+    els.gForm.hidden = true;
+    const prefill = els.suEmail.value.trim() || els.liEmail.value.trim();
+    if (prefill && !els.gEmail.value) els.gEmail.value = prefill;
+    if (!els.gName.value.trim() && els.suName.value.trim()) els.gName.value = els.suName.value.trim();
+  }
+}
+
+function setAuthErr(which, msg) {
+  const el = { signup: els.signupErr, login: els.loginErr, g: els.gErr }[which];
+  el.textContent = msg || "";
+  el.classList.toggle("show", Boolean(msg));
+}
+function clearAuthErrors() {
+  setAuthErr("signup", null);
+  setAuthErr("login", null);
+  setAuthErr("g", null);
+}
+
+/* ---------- session switching ---------- */
+
+async function startSession(user, { adoptGuest = false } = {}) {
+  const prevKey = storageKey(); // storage of whichever space is on screen right now
+  try { localStorage.setItem(prevKey, JSON.stringify(db)); } catch { /* ignore */ }
+  session = user.id;
+  try { localStorage.setItem(SESSION_KEY, JSON.stringify({ id: session, at: Date.now() })); } catch { /* ignore */ }
+
+  if (adoptGuest && prevKey === GUEST_KEY && (db.txns.length > 0 || db.budget !== null)) {
+    const n = db.txns.length;
+    const move = n === 0 || confirm(
+      `Move this browser's ledger (${n} transaction${n === 1 ? "" : "s"} + budget) into ${user.email}? ` +
+      "Cancel instead starts the account empty and keeps the data as guest data."
+    );
+    if (move) {
+      try { localStorage.removeItem(GUEST_KEY); } catch { /* ignore */ } // data now belongs to the account
+    } else {
+      db = blankDb();
+    }
+  } else {
+    db = migrate(readRaw(userKey(user.id)));
+  }
+
+  save();
+  selectedCat = (db.cats[0] || fallbackCat()).id;
+  viewMonth = nowMonth();
+  cancelEdit();
+  if (els.settings.open) els.settings.close();
+  renderAll();
+  return user;
+}
+
+function logOut() {
+  try { localStorage.setItem(storageKey(), JSON.stringify(db)); } catch { /* ignore */ } // flush the account space first
+  session = null;
+  try { localStorage.removeItem(SESSION_KEY); } catch { /* ignore */ }
+  db = migrate(readRaw(GUEST_KEY));
+  selectedCat = (db.cats[0] || fallbackCat()).id;
+  viewMonth = nowMonth();
+  cancelEdit();
+  if (els.settings.open) els.settings.close();
+  renderAll();
+  toast("Logged out — you're browsing as a guest");
+}
+
+/* ---------- sign up / log in / google ---------- */
+
+async function signUp(rawName, rawEmail, pass) {
+  const name = String(rawName || "").trim();
+  const email = String(rawEmail || "").trim().toLowerCase();
+  if (!name) return { err: "Please tell us your name" };
+  if (!validEmail(email)) return { err: "That email doesn't look right" };
+  if (String(pass || "").length < 6) return { err: "Password needs at least 6 characters" };
+  if (findUserByEmail(email)) return { err: "An account with this email already exists — log in instead" };
+  const user = { id: newId(), name: name.slice(0, 30), email, provider: "pass", passHash: await hashPass(pass), createdAt: Date.now() };
+  saveUsers(getUsers().concat(user));
+  await startSession(user, { adoptGuest: true });
+  return { ok: true, user };
+}
+
+async function logIn(rawEmail, pass) {
+  const user = findUserByEmail(rawEmail);
+  if (!user) return { err: "No account found for this email — sign up first" };
+  if (user.provider === "google") return { err: "This email is linked to Google — use “Continue with Google”" };
+  if (user.passHash !== await hashPass(pass)) return { err: "Wrong password — try again" };
+  await startSession(user);
+  return { ok: true, user };
+}
+
+async function googleSignIn(rawName, rawEmail) {
+  const email = String(rawEmail || "").trim().toLowerCase();
+  if (!validEmail(email)) return { err: "Enter the Google email to sign in with" };
+  const existing = findUserByEmail(email);
+  if (existing && existing.provider === "pass") {
+    return { err: "This email already has a password account — log in with the password instead" };
+  }
+  const fresh = !existing;
+  const user = existing || {
+    id: newId(),
+    name: (String(rawName || "").trim() || email.split("@")[0]).slice(0, 30),
+    email,
+    provider: "google",
+    passHash: null,
+    createdAt: Date.now(),
+  };
+  if (fresh) saveUsers(getUsers().concat(user));
+  await startSession(user, { adoptGuest: fresh });
+  return { fresh, user };
+}
+
+/* ---------- auth dialog wiring ---------- */
+
+$("btnAuth").addEventListener("click", () => {
+  if (session) logOut();
+  else openAuth();
+});
+$("authClose").addEventListener("click", () => els.auth.close());
+$("tabSignup").addEventListener("click", () => setAuthTab("signup"));
+$("tabLogin").addEventListener("click", () => setAuthTab("login"));
+
+$("btnGoogle").addEventListener("click", () => showAuthView("google"));
+$("btnGuest").addEventListener("click", () => {
+  els.auth.close();
+  toast("Browsing as a guest — log in anytime from the top right");
+});
+els.auth.addEventListener("close", clearAuthErrors);
+
+els.signupForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const btn = $("suBtn");
+  btn.disabled = true;
+  const res = await signUp(els.suName.value, els.suEmail.value, els.suPass.value);
+  btn.disabled = false;
+  if (res.err) { setAuthErr("signup", res.err); return; }
+  els.auth.close();
+  toast(`Welcome, ${res.user.name}! Your ledger is saved with your account.`);
+});
+
+els.loginForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const btn = $("liBtn");
+  btn.disabled = true;
+  const res = await logIn(els.liEmail.value, els.liPass.value);
+  btn.disabled = false;
+  if (res.err) { setAuthErr("login", res.err); return; }
+  els.auth.close();
+  toast(`Welcome back, ${res.user.name}`);
+});
+
+async function finishGoogleSignIn(res) {
+  if (res.err) { setAuthErr("g", res.err); return; }
+  els.auth.close();
+  toast(res.fresh ? `Signed in with Google as ${res.user.email}` : `Welcome back, ${res.user.name}`);
+}
+
+$("gDemo").addEventListener("click", async (e) => {
+  const btn = e.currentTarget;
+  btn.disabled = true;
+  await finishGoogleSignIn(await googleSignIn("Demo User", "demo.user@gmail.com"));
+  btn.disabled = false;
+});
+
+els.gForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const btn = $("gGo");
+  btn.disabled = true;
+  await finishGoogleSignIn(await googleSignIn(els.gName.value, els.gEmail.value));
+  btn.disabled = false;
+});
+
+$("gAnother").addEventListener("click", () => {
+  els.gList.hidden = true;
+  els.gForm.hidden = false;
+  const prefill = els.suEmail.value.trim() || els.liEmail.value.trim();
+  if (prefill) els.gEmail.value = prefill;
+  if (!els.gName.value.trim() && els.suName.value.trim()) els.gName.value = els.suName.value.trim();
+  els.gEmail.focus();
+});
+$("gBack").addEventListener("click", () => showAuthView("main"));
+
 /* ============================== sample data ============================== */
 
 const SAMPLE = {
@@ -1401,7 +1912,7 @@ function confirmSample() {
 /* ============================== keyboard ============================== */
 
 document.addEventListener("keydown", (e) => {
-  if (els.settings.open) return;
+  if (els.settings.open || els.auth.open) return;
   if (e.target.tagName === "INPUT" || e.target.tagName === "DIALOG") return;
   if (e.key === "Escape") { if (editingId) cancelEdit(); return; }
   if (e.key === "/" || e.key.toLowerCase() === "n") {
@@ -1421,6 +1932,11 @@ window.addEventListener("resize", () => {
 });
 els.date.value = todayISO();
 renderAll();
+
+// first visit: show the sign-up / log-in screen before anything else
+try {
+  if (!session && localStorage.getItem(SEEN_AUTH_KEY) !== "1") openAuth("signup");
+} catch { /* storage unavailable */ }
 
 })();
 </script>
